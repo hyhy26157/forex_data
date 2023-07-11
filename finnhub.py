@@ -30,10 +30,6 @@ def process_trade_data(data):
         print("------------------")
 
 def on_message(ws,message):
-    print("++Rcv raw:", message)
-    decoded_message = websocket._app_data_masker(message)
-    print("++Rcv decoded:", decoded_message)
-    
     # Process the received trade data
     process_trade_data(message)
 
