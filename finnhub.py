@@ -29,7 +29,7 @@ def process_trade_data(data):
         print(f"Volume: {volume}")
         print("------------------")
 
-def on_message(message):
+def on_message(ws,message):
     print("++Rcv raw:", message)
     decoded_message = websocket._app_data_masker(message)
     print("++Rcv decoded:", decoded_message)
