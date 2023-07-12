@@ -2,6 +2,7 @@
 import websocket
 import json
 from kafka import KafkaProducer
+from finnhub_api_key import key
 
 hostname='10.148.0.8'
 port='9092'
@@ -46,7 +47,7 @@ def on_open(ws):
 
 if __name__ == "__main__":
     websocket.enableTrace(True)
-    ws = websocket.WebSocketApp("wss://ws.finnhub.io?token=cemknc2ad3ieeugka97gcemknc2ad3ieeugka980",
+    ws = websocket.WebSocketApp(f"wss://ws.finnhub.io?token={key}",
                               on_message = on_message,
                               on_error = on_error,
                               on_close = on_close)
