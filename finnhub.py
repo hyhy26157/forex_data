@@ -20,6 +20,16 @@ def process_trade_data(data):
         price = trade['p']
         timestamp = trade['t']
         volume = trade['v']
+
+        trade_data = {
+            'symbol': symbol,
+            'price': price,
+            'timestamp': timestamp,
+            'volume': volume
+        }
+        
+        # Send the trade data to Kafka
+        producer.send(topic_name, trade_data)
         
         # Process the trade data as per your requirements
         # For example, you can print the values or store them in a data structure
