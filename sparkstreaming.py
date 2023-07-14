@@ -31,10 +31,10 @@ df = df.select(from_json(df.value.cast("string"), schema).alias("parsed_value"))
 
 # Access the individual fields
 df = df.select(
-    df.parsed_value.symbol,
-    df.parsed_value.price,
-    df.parsed_value.timestamp.cast('timestamp').alias('timestamp'),  # Cast to timestamp
-    df.parsed_value.volume
+    col("parsed_value.symbol").alias("symbol"),
+    col("parsed_value.price").alias("price"),
+    (col("parsed_value.timestamp") / 1000).cast('timestamp').alias('timestamp'),  # Cast to timestamp
+    col("parsed_value.volume").alias("volume")
 )
 
 # Create a window of X minute
