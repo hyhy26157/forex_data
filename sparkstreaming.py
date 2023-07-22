@@ -41,43 +41,29 @@ row = stocks.select(
     col("parsed_value.volume").alias("volume")
 ).withWatermark("timestamp", "60 seconds")
 
+
 # Define the sliding window function
 # the groupby function group the window df by timestamp of 60 seconds and by symbol column. data is filtered by time, followed by the symbol.
 
-def perform_window(df):
-    windowed_df = df \
-        .groupBy(window(col("timestamp"), "60 seconds"), col("symbol")) \
-        .agg(avg("price").alias("price"), min("price").alias("minPrice"), max("price").alias("maxPrice"), count("price").alias("count")) \
-        .select("window.start", "window.end", "symbol", "price", "minPrice", "maxPrice", "count")
-    return windowed_df
+windowed_df = df \
+    .groupBy(window(col("timestamp"), "15 seconds"), col("symbol")) \
+    .agg(avg("price").alias("price"), min("price").alias("minPrice"), max("price").alias("maxPrice"), count("price").alias("count")) \
+    .select("window.start", "window.end", "symbol", "price", "minPrice", "maxPrice", "count")
 
-# Apply sliding window function to stocks dataset
-aggregates = perform_window(row)
-
-# Print the schema of the resultant DataFrame
-aggregates.printSchema()
-
-# Write the window processing output to the console
-writeToConsole = aggregates \
-    .writeStream \
-    .format("console") \
-    .option("truncate", "false") \
-    .queryName("kafka spark streaming console") \
-    .outputMode("append") \
-    .start()
+windowed_df.writeStream.outputMode("complete").format("console").queryName("aggregated_stock").outputMode("append").start()
 
 # Write the moving averages into another Kafka topic
-writeToKafka = aggregates \
-    .selectExpr("CAST(symbol AS STRING) AS key", "to_json(struct(*)) AS value") \
-    .writeStream \
-    .format("kafka") \
-    .option("kafka.bootstrap.servers", f"{hostname}:{port}") \
-    .option("topic", "forex_averages") \
-    .option("checkpointLocation", "/tmp/sparkcheckpoint/") \
-    .queryName("kafka spark streaming kafka") \
-    .outputMode("append") \
-    .start()
+#writeToKafka = aggregates \
+#    .selectExpr("CAST(symbol AS STRING) AS key", "to_json(struct(*)) AS value") \
+#    .writeStream \
+#    .format("kafka") \
+#    .option("kafka.bootstrap.servers", f"{hostname}:{port}") \
+#    .option("topic", "forex_averages") \
+#    .option("checkpointLocation", "/tmp/sparkcheckpoint/") \
+#    .queryName("kafka spark streaming kafka") \
+#    .outputMode("append") \
+#    .start()
 
 # Wait for the termination of the streams
-spark.streams.awaitAnyTermination()
+windowed_df.awaitTermination()
 
