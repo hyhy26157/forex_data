@@ -10,6 +10,7 @@ https://cloud.google.com/sdk/docs/install
 https://cloud.google.com/compute/docs/instances/create-start-instance
 Using ubuntu image
 3. connect to gcp vm
+gcloud init
 gcloud compute ssh <VM name> --zone= <Zone Name>
 note: If you have a dynamic IP address like mine, remember to check your IP address before login and put it on the VM firewall whitelist.
 4. Update and Install Java JDK version 8+
@@ -31,17 +32,21 @@ spark-shell --packages org.apache.spark:spark-sql-kafka-0-10_2.12:< spark downlo
 
 8. Configuration of spark and kafka
 # define spark environment in .bashrc
-export SPARK_HOME=/opt/spark/spark-3.4.0-bin-hadoop3
+export SPARK_HOME=/home/<username>/where/your/spark/file/is/
 export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 export PYSPARK_PYTHON=/usr/bin/python3
-
 source .bashrc 
+
 # start spark
 $SPARK_HOME/sbin/start-master.sh
 # find the start master location
 /opt/spark/spark-3.4.0-binhadoop3/logs/<*.Master-1-hdfs>.out
+look something like this spark://spark.asia-southeast1-b.c.banded-nimbus-393607.internal:7077
 # run slave (single server setup)
-$SPARK_HOME/sbin/start-worker.sh spark://hdfs.asia-southeast1-b.c.tfip-390503.internal:7077
+$SPARK_HOME/sbin/start-worker.sh spark://spark.asia-southeast1-b.c.banded-nimbus-393607.internal:7077
+
+
+
 # setup zookeeper systemmd
 sudo nano /etc/systemd/system/zookeeper.service
 
@@ -52,8 +57,7 @@ Requires=network.target remote-fs.target
 After=network.target remote-fs.target
 [Service]
 Type=simple
-ExecStart=/usr/local/kafka/bin/zookeeper-server-start.sh
-/usr/local/kafka/config/zookeeper.properties
+ExecStart=/usr/local/kafka/bin/zookeeper-server-start.sh /usr/local/kafka/config/zookeeper.properties
 ExecStop=/usr/local/kafka/bin/zookeeper-server-stop.sh
 Restart=on-abnormal
 [Install]
@@ -69,8 +73,7 @@ Requires=zookeeper.service
 [Service]
 Type=simple
 Environment="JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64"
-ExecStart=/usr/local/kafka/bin/kafka-server-start.sh
-/usr/local/kafka/config/server.properties
+ExecStart=/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties
 ExecStop=/usr/local/kafka/bin/kafka-server-stop.sh
 [Install]
 WantedBy=multi-user.target
